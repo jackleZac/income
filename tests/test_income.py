@@ -26,7 +26,7 @@ class TestIncome(unittest.TestCase):
             "source": "Salary",
             "amount": 6000,
             "description": "A monthly salary as Data Analyst",
-            "date": "2023-05-01"
+            "date": datetime.datetime.now().isoformat()
         }
         # Make a request to add_income function
         response = self.app.post('/income', json=test_income)
@@ -46,26 +46,26 @@ class TestIncome(unittest.TestCase):
             "source": "Salary",
             "amount": 6000,
             "description": "A monthly salary as Data Analyst",
-            "date": "2023-05-01"
+            "date": datetime.datetime.now().isoformat()
         },
            {
             "source": "Bonus",
             "amount": 1200,
             "description": "A monthly bonus as a Data Analyts",
-            "date": "2023-05-01"
+            "date": datetime.datetime.now().isoformat()
         },
            {
             "source": "Second Job",
             "amount": 2000,
             "description": "Part-time Gym Trainer at Eagle GYm, London",
-            "date": "2023-05-01"
+            "date": datetime.datetime.now().isoformat()
         }]
         # Insert a list of incomes into MongoDB Atlas
-        insert_income = self.db.insert_one(test_incomes)
+        insert_income = self.db.insert_many(test_incomes)
         self.assertTrue(insert_income.acknowledged)
         # Make a GET request to get a list of existing incomes
-        response = self.app.get('/income', methods=["GET"])
-        # Assert that incomes have been successfully retrieved
+        response = self.app.get('/income')
+        # Assert that the incomes have been successfully retrieved
         self.assertEqual(response.status_code, 200)
         # Convert JSON data to Python dict
         response_dict = json.loads(response.data)
@@ -77,7 +77,7 @@ class TestIncome(unittest.TestCase):
             "source": "Salary",
             "amount": 6000,
             "description": "A monthly salary as Data Analyst",
-            "date": "2023-05-01"
+            "date": datetime.datetime.now().isoformat()
         }
         # Insert an income into MongoDB Atlas
         insert_income = self.db.insert_one(test_income)
@@ -95,9 +95,9 @@ class TestIncome(unittest.TestCase):
                 "source": "Salary",
                 "amount": 1000,
                 "description": "Earn Side Hustle at Fiverr",
-                "date": "2023-05-01" }
+                "date": datetime.datetime.now().isoformat() }
             # Make a PUT request to update existing income
-            response = self.app.put(f'/expense/{test_income_id}', json=update_income, content_type='application/json')
+            response = self.app.put(f'/income/{test_income_id}', json=update_income, content_type='application/json')
             # Assert that an income has been successfully updated
             self.assertEqual(response.status_code, 200)
             # Fetch the expense from MongoDB Atlas
@@ -111,13 +111,12 @@ class TestIncome(unittest.TestCase):
             self.fail("Failed to insert expense into database")
             
     def test_delete_income(self):
-        """It should delete an expense"""
+        """It should delete an income"""
         test_income = {
-            "amount": 70.00, 
-            "date":datetime.datetime.now().isoformat(), 
-            "category": "Fitness", 
-            "description": "A Monthly Payment for Eagle Gym Membership", 
-            "repeatMonthly": True} 
+            "source": "Salary",
+            "amount": 1000,
+            "description": "Earn Side Hustle at Fiverr",
+            "date": datetime.datetime.now().isoformat() } 
         # Insert an expense into MongoDB 
         insert_income = self.db.insert_one(test_income)
         self.assertTrue(insert_income.acknowledged)
@@ -128,8 +127,9 @@ class TestIncome(unittest.TestCase):
         # Assert that the expense ID is not None
         self.assertIsNotNone(inserted_income["_id"])
         test_income_id = inserted_income["_id"]
+        print(test_income_id)
         # Make a DELETE request to delete income
-        response = self.app.delete(f'/expense/{test_income_id}')
+        response = self.app.delete(f'/income/{test_income_id}')
         # Assert that the expense has been successfully updated
         self.assertEqual(response.status_code, 200)
         # Make an attempt to fetch the expense again
